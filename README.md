@@ -149,6 +149,19 @@ Unlike in C, in Go assignment between items of different type requires an explic
 
 
 
+### Constants ###
+Constants are declared like variables, but with the `const` keyword. Constants can be character, string, boolean, or numeric values. Constants cannot be declared using the `:=` syntax.
+```go
+const Truth = true
+fmt.Println("Go rules?", Truth)
+```
+
+```cmd
+Go rules? true
+```
+
+
+
 
 
 
