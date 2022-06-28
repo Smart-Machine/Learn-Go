@@ -110,7 +110,7 @@ Also, you can initialize the variable as you declare it.
 ```go
 var i, j int = 1, 2
 ```
-Inside a function, the := short assignment statement can be used in place of a var declaration with implicit type.
+Inside a function, the `:=` short assignment statement can be used in place of a `var` declaration with implicit type.
 ```go
 package main
 
