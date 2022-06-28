@@ -91,7 +91,43 @@ func main() {
 
 
 
+### Variables ###
 
+It is considered a good practice to use the `var` keyword for declaring variables outside the scope of a function, or at the beginning of a big function. For example:
+```go
+package main
+
+import "fmt"
+
+var c, python, java bool
+
+func main() {
+	var i int
+	fmt.Println(i, c, python, java)
+}
+```
+Also, you can initialize the variable as you declare it. 
+```go
+var i, j int = 1, 2
+```
+Inside a function, the := short assignment statement can be used in place of a var declaration with implicit type.
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var i, j int = 1, 2
+	k := 3
+	c, python, java := true, false, "no!"
+
+	fmt.Println(i, j, k, c, python, java)
+}
+```
+
+```cmd
+1 2 3 true false no!
+```
 
 
 
