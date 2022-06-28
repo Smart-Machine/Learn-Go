@@ -43,6 +43,24 @@ $ go run *.go
 Hello
 ```
 
+Imports are usually written as follows
+```go
+import "fmt"
+```
+
+```go
+import "fmt"
+import "math"
+```
+
+```go
+import (
+	"fmt"
+	"math"
+)
+```
+
+
 
 
 
