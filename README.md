@@ -266,7 +266,7 @@ func pow(x, n, lim float64) float64 {
 	if v := math.Pow(x, n); v < lim {
 		return v
 	}
-	return lim
+	return lim   //if you will try to return here v, it will fail.
 }
 
 func main() {
