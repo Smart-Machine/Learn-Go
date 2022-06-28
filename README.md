@@ -171,7 +171,7 @@ Go has only one looping construct, the `for` loop. The basic `for` loop has thre
 
 The init statement will often be a short variable declaration, and the variables declared there are visible only in the scope of the `for` statement.
 
-**Note**:Unlike other languages like C, Java, or JavaScript there are no parentheses surrounding the three components of the for statement and the braces { } are always required.
+**Note**: Unlike other languages like C, Java, or JavaScript there are no parentheses surrounding the three components of the for statement and the braces { } are always required.
 
 ```go
 package main
@@ -190,6 +190,28 @@ func main() {
 ```cmd
 45
 ```
+
+C's `while` is spelled `for` in Go.
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	sum := 1
+	for sum < 1000 {
+		sum += sum
+	}
+	fmt.Println(sum)
+}
+```
+
+```cmd
+1024
+```
+
+
 
 
 
