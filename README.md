@@ -132,7 +132,7 @@ func main() {
 
 
 ### Type conversions ###
-The expression T(v) converts the value v to the type T.
+The expression `T(v)` converts the value `v` to the type `T`.
 Some numeric conversions:
 ```go
 var i int = 42
