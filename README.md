@@ -171,7 +171,7 @@ Go has only one looping construct, the `for` loop. The basic `for` loop has thre
 
 The init statement will often be a short variable declaration, and the variables declared there are visible only in the scope of the `for` statement.
 
-**Note**: Unlike other languages like C, Java, or JavaScript there are no parentheses surrounding the three components of the for statement and the braces { } are always required.
+**Note**: Unlike other languages like C, Java, or JavaScript there are no parentheses surrounding the three components of the `for` statement and the braces `{ }` are always required.
 
 ```go
 package main
@@ -211,9 +211,42 @@ func main() {
 1024
 ```
 
+If you omit the loop condition it loops forever, so an infinite loop is compactly expressed.
+
+```go
+package main
+
+func main() {
+	for {
+	}
+}
+```
 
 
 
+### If statement ###
+
+Go's `if` statements are like its `for` loops; the expression need not be surrounded by parentheses `( )` but the braces `{ }` are required.
+
+```go
+package main
+
+import (
+	"fmt"
+	"math"
+)
+
+func sqrt(x float64) string {
+	if x < 0 {
+		return sqrt(-x) + "i"
+	}
+	return fmt.Sprint(math.Sqrt(x))
+}
+
+func main() {
+	fmt.Println(sqrt(2), sqrt(-4))
+}
+```
 
 
 
