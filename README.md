@@ -170,6 +170,7 @@ Go has only one looping construct, the `for` loop. The basic `for` loop has thre
 * **the post statement**: executed at the end of every iteration
 
 The init statement will often be a short variable declaration, and the variables declared there are visible only in the scope of the `for` statement.
+
 **Note**:Unlike other languages like C, Java, or JavaScript there are no parentheses surrounding the three components of the for statement and the braces { } are always required.
 
 ```go
