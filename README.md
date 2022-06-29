@@ -588,6 +588,95 @@ func main() {
 
 
 
+### Arrays ###
+
+The type `[n]T` is an array of `n` values of type `T`.
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var a [2]string
+	a[0] = "Hello"
+	a[1] = "World"
+	fmt.Println(a[0], a[1])
+	fmt.Println(a)
+
+	primes := [6]int{2, 3, 5, 7, 11, 13}
+	fmt.Println(primes)
+}
+```
+
+```cmd
+Hello World
+[Hello World]
+[2 3 5 7 11 13]
+```
+
+
+
+### Slices ###
+
+An array has a fixed size. A slice, on the other hand, is a dynamically-sized, flexible view into the elements of an array. In practice, slices are much more common than arrays. The type `[]T` is a slice with elements of type `T`.
+A slice is formed by specifying two indices, a low and high bound, separated by a colon:
+```cmd
+a[low : high]
+```
+This selects a half-open range which includes the first element, but excludes the last one.
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	primes := [6]int{2, 3, 5, 7, 11, 13}
+
+	var s []int = primes[1:4]
+	fmt.Println(s)
+}
+```
+
+```cmd
+[3 5 7]
+```
+
+A slice does not store any data, it just describes a section of an underlying array. Changing the elements of a slice modifies the corresponding elements of its underlying array. Other slices that share the same underlying array will see those changes.
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	names := [4]string{
+		"John",
+		"Paul",
+		"George",
+		"Ringo",
+	}
+	fmt.Println(names)
+
+	a := names[0:2]
+	b := names[1:3]
+	fmt.Println(a, b)
+
+	b[0] = "XXX"
+	fmt.Println(a, b)
+	fmt.Println(names)
+}
+```
+
+```cmd
+[John Paul George Ringo]
+[John Paul] [Paul George]
+[John XXX] [XXX George]
+[John XXX George Ringo]
+```
+
+
 
 
 
