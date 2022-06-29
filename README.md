@@ -5,9 +5,17 @@ This is a cheatsheet for future me about Go.
 ## Contents ##
 * Basics
 	* [Hello World](#hello-world)
-
-
-
+	* [Packages and Imports](#packages-and-imports)
+	* [Named return value](#named-return-value)
+	* [Variables](#variables)
+	* [Type conversions](#type-conversions)
+	* [Constants](#constants)
+	* [For loop](#for-loop)
+	* [If statement](#if-statement)
+	* [Switch statement](#switch-statement)
+	* [Defer statement](#defer-statement)
+	
+	
 ### Hello World ###
 
 ```go
