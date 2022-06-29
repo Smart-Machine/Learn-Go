@@ -4,7 +4,7 @@ This is a cheatsheet for future me about Go.
 
 ## Contents ##
 * Basics
-	* [Hello World] (#Hello World)
+	* [Hello World] (#Hello_World)
 
 
 
