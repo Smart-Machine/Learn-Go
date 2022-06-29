@@ -59,7 +59,7 @@ func hello() string {
 }
 ```
 
-```cmd
+```bash
 $ go run *.go
 Hello
 ```
@@ -102,7 +102,7 @@ func main() {
 }
 ```
 
-```cmd
+```bash
 7 10
 ```
 
@@ -142,7 +142,7 @@ func main() {
 }
 ```
 
-```cmd
+```bash
 1 2 3 true false no!
 ```
 
@@ -173,7 +173,7 @@ const Truth = true
 fmt.Println("Go rules?", Truth)
 ```
 
-```cmd
+```bash
 Go rules? true
 ```
 
@@ -204,7 +204,7 @@ func main() {
 }
 ```
 
-```cmd
+```bash
 45
 ```
 
@@ -224,7 +224,7 @@ func main() {
 }
 ```
 
-```cmd
+```bash
 1024
 ```
 
@@ -265,7 +265,7 @@ func main() {
 }
 ```
 
-```cmd
+```bash
 1.4142135623730951 2i
 ```
 
@@ -294,7 +294,7 @@ func main() {
 }
 ```
 
-```cmd
+```bash
 9 20
 ```
 
@@ -326,7 +326,7 @@ func main() {
 }
 ```
 
-```cmd
+```bash
 27 >= 20
 9 20
 ```
@@ -361,7 +361,7 @@ func main() {
 }
 ```
 
-```cmd
+```bash
 Go runs on Linux.
 ```
 
@@ -406,7 +406,7 @@ func main() {
 }
 ```
 
-```cmd
+```bash
 hello
 world
 ```
@@ -429,7 +429,7 @@ func main() {
 }
 ```
 
-```cmd
+```bash
 counting
 done
 9
@@ -483,7 +483,7 @@ func main() {
 }
 ```
 
-```cmd
+```bash
 42
 21
 73
@@ -582,7 +582,7 @@ func main() {
 }
 ```
 
-```cmd
+```bash
 {1 2} &{1 2} {1 0} {0 0}
 ```
 
@@ -639,7 +639,7 @@ func main() {
 }
 ```
 
-```cmd
+```bash
 [3 5 7]
 ```
 
@@ -669,7 +669,7 @@ func main() {
 }
 ```
 
-```cmd
+```bash
 [John Paul George Ringo]
 [John Paul] [Paul George]
 [John XXX] [XXX George]
