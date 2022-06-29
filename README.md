@@ -394,7 +394,7 @@ hello
 world
 ```
 
-You can stack defer. Deferred function calls are pushed onto a stack. When a function returns, its deferred calls are executed in last-in-first-out order. More about this (here)[https://go.dev/blog/defer-panic-and-recover].
+You can stack defer. Deferred function calls are pushed onto a stack. When a function returns, its deferred calls are executed in last-in-first-out order. More about this [here](https://go.dev/blog/defer-panic-and-recover).
 
 ```go
 package main
