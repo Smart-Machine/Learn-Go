@@ -18,7 +18,8 @@ This is a cheatsheet for future me about Go.
 	* [Structs](#structs)
 	* [Pointers to structs](#pointers-to-structs)
 	* [Struct Literals](#struct-literals)
-	* 
+	* [Arrays](#arrays)
+	* [Slices](#slices)
 	
 	
 ### Hello World ###
