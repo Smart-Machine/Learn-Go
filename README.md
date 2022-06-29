@@ -609,7 +609,7 @@ func main() {
 }
 ```
 
-```cmd
+```bash
 Hello World
 [Hello World]
 [2 3 5 7 11 13]
