@@ -14,6 +14,11 @@ This is a cheatsheet for future me about Go.
 	* [If statement](#if-statement)
 	* [Switch statement](#switch-statement)
 	* [Defer statement](#defer-statement)
+	* [Pointers](#pointers)
+	* [Structs](#structs)
+	* [Pointers to structs](#pointers-to-structs)
+	* [Struct Literals](#struct-literals)
+	* 
 	
 	
 ### Hello World ###
