@@ -23,6 +23,7 @@ This is a cheatsheet for future me about Go.
 	* [Slice length and capacity](#slice-length-and-capacity)
 	* [Creating a slice with make](#creating-a-slice-with-make)
 	* [Appending to a slice](#appending-to-a-slice)
+	* [Range](#range)
 	
 ### Hello World ###
 
@@ -875,5 +876,116 @@ func append(s []T, vs ...T) []T
 
 The first parameter `s` of append is a slice of type `T`, and the rest are `T` values to append to the slice.
 The resulting value of `append` is a slice containing all the elements of the original slice plus the provided values. If the backing array of `s` is too small to fit all the given values a bigger array will be allocated. The returned slice will point to the newly allocated array.
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var s []int
+	printSlice(s)
+
+	// append works on nil slices.
+	s = append(s, 0)
+	printSlice(s)
+
+	// The slice grows as needed.
+	s = append(s, 1)
+	printSlice(s)
+
+	// We can add more than one element at a time.
+	s = append(s, 2, 3, 4)
+	printSlice(s)
+}
+
+func printSlice(s []int) {
+	fmt.Printf("len=%d cap=%d %v\n", len(s), cap(s), s)
+}
+```
+
+```bash
+len=0 cap=0 []
+len=1 cap=1 [0]
+len=2 cap=2 [0 1]
+len=5 cap=6 [0 1 2 3 4]
+```
+
+
+
+### Range ###
+
+The `range` form of the `for` loop iterates over a slice or map.
+When ranging over a slice, two values are returned for each iteration. The first is the index, and the second is a copy of the element at that index.
+
+```go
+package main
+
+import "fmt"
+
+var pow = []int{1, 2, 4, 8, 16, 32, 64, 128}
+
+func main() {
+	for i, v := range pow {
+		fmt.Printf("2**%d = %d\n", i, v)
+	}
+}
+```
+
+```bash
+2**0 = 1
+2**1 = 2
+2**2 = 4
+2**3 = 8
+2**4 = 16
+2**5 = 32
+2**6 = 64
+2**7 = 128
+```
+
+You can skip the index or value by assigning to `_`.
+
+```go
+for i, _ := range pow
+for _, value := range pow
+```
+
+If you only want the index, you can omit the second variable.
+
+```go
+for i := range pow
+```
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	pow := make([]int, 10)
+	for i := range pow {
+		pow[i] = 1 << uint(i) // == 2**i
+	}
+	for _, value := range pow {
+		fmt.Printf("%d\n", value)
+	}
+}
+```
+
+```bash
+1
+2
+4
+8
+16
+32
+64
+128
+256
+512
+```
+
+
+
 
 
