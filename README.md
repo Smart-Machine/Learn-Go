@@ -21,7 +21,8 @@ This is a cheatsheet for future me about Go.
 	* [Arrays](#arrays)
 	* [Slices](#slices)
 	* [Slice length and capacity](#slice-length-and-capacity)
-	
+	* [Creating a slice with make](#creating-a-slice-with-make)
+	* [Appending to a slice](#appending-to-a-slice)
 	
 ### Hello World ###
 
@@ -738,6 +739,42 @@ func main() {
 [5]
 ```
 
+Slices can contain any type, including other slices.
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+func main() {
+	// Create a tic-tac-toe board.
+	board := [][]string{
+		[]string{"_", "_", "_"},
+		[]string{"_", "_", "_"},
+		[]string{"_", "_", "_"},
+	}
+
+	// The players take turns.
+	board[0][0] = "X"
+	board[2][2] = "O"
+	board[1][2] = "X"
+	board[1][0] = "O"
+	board[0][2] = "X"
+
+	for i := 0; i < len(board); i++ {
+		fmt.Printf("%s\n", strings.Join(board[i], " "))
+	}
+}
+```
+
+```bash
+X _ X
+O _ X
+_ _ O
+```
 
 
 ### Slice length and capacity ###
@@ -779,6 +816,64 @@ len=2 cap=4 [5 7]
 
 
 
+### Creating a slice with make ###
 
+Slices can be created with the built-in `make` function; this is how you create dynamically-sized arrays.
+The `make` function allocates a zeroed array and returns a slice that refers to that array:
+
+```go 
+a := make([]int, 5)  // len(a)=5
+```
+
+To specify a capacity, pass a third argument to `make`:
+
+```go
+b := make([]int, 0, 5) // len(b)=0, cap(b)=5
+```
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	a := make([]int, 5)
+	printSlice("a", a)
+
+	b := make([]int, 0, 5)
+	printSlice("b", b)
+
+	c := b[:2]
+	printSlice("c", c)
+
+	d := c[2:5]
+	printSlice("d", d)
+}
+
+func printSlice(s string, x []int) {
+	fmt.Printf("%s len=%d cap=%d %v\n",
+		s, len(x), cap(x), x)
+}
+```
+
+```bash
+a len=5 cap=5 [0 0 0 0 0]
+b len=0 cap=5 []
+c len=2 cap=5 [0 0]
+d len=3 cap=3 [0 0 0]
+```
+
+
+
+### Appending to a slice ###
+
+It is common to append new elements to a slice, and so Go provides a built-in `append` function.
+
+```go 
+func append(s []T, vs ...T) []T
+```
+
+The first parameter `s` of append is a slice of type `T`, and the rest are `T` values to append to the slice.
+The resulting value of `append` is a slice containing all the elements of the original slice plus the provided values. If the backing array of `s` is too small to fit all the given values a bigger array will be allocated. The returned slice will point to the newly allocated array.
 
 
