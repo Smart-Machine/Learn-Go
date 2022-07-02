@@ -29,6 +29,8 @@ This is a cheatsheet for future me about Go.
 	* [Function values](#function-values)
 	* [Function closures](#function-closures)
 * Methods and interfaces
+* Generics
+* Concurrency
 	
 	
 ### Hello World ###
