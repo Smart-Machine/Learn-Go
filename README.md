@@ -26,6 +26,9 @@ This is a cheatsheet for future me about Go.
 	* [Range](#range)
 	* [Maps](#maps)
 	* [Mutating Maps](#mutating-maps)
+	* [Function values](#function-values)
+	* [Function closures](#function-closures)
+	
 	
 ### Hello World ###
 
@@ -1136,6 +1139,129 @@ The value: 48
 The value: 0
 The value: 0 Present? false
 ```
+
+
+
+### Function values ###
+
+Functions are values too. They can be passed around just like other values. Function values may be used as function arguments and return values.
+
+```go
+package main
+
+import (
+	"fmt"
+	"math"
+)
+
+func compute(fn func(float64, float64) float64) float64 {
+	return fn(3, 4)
+}
+
+func main() {
+	hypot := func(x, y float64) float64 {
+		return math.Sqrt(x*x + y*y)
+	}
+	fmt.Println(hypot(5, 12))
+
+	fmt.Println(compute(hypot))
+	fmt.Println(compute(math.Pow))
+}
+```
+
+```bash
+13
+5
+81
+```
+
+
+
+### Function closures ###
+
+Go functions may be closures. A closure is a function value that references variables from outside its body. The function may access and assign to the referenced variables; in this sense the function is "bound" to the variables.
+
+For example, the `adder` function returns a closure. Each closure is bound to its own `sum` variable.
+
+```go
+package main
+
+import "fmt"
+
+func adder() func(int) int {
+	sum := 0
+	return func(x int) int {
+		sum += x
+		return sum
+	}
+}
+
+func main() {
+	pos, neg := adder(), adder()
+	for i := 0; i < 10; i++ {
+		fmt.Println(
+			pos(i),
+			neg(-2*i),
+		)
+	}
+}
+```
+
+```bash 
+0 0
+1 -2
+3 -6
+6 -12
+10 -20
+15 -30
+21 -42
+28 -56
+36 -72
+45 -90
+```
+
+Let's have some fun with functions. 
+Implement a fibonacci function that returns a function (a closure) that returns successive fibonacci numbers (0, 1, 1, 2, 3, 5, ...).
+
+```go
+package main
+
+import "fmt"
+
+// fibonacci is a function that returns
+// a function that returns an int.
+func fibonacci() func() int {
+	a, b := 0, 1
+	return func() int {
+		s := a + b
+		a = b
+		b = s
+		return s
+	}
+}
+
+func main() {
+	f := fibonacci()
+	for i := 0; i < 10; i++ {
+		fmt.Println(f())
+	}
+}
+```
+
+```bash
+1
+2
+3
+5
+8
+13
+21
+34
+55
+89
+```
+
+
 
 
 
