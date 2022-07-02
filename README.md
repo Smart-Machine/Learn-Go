@@ -28,6 +28,7 @@ This is a cheatsheet for future me about Go.
 	* [Mutating Maps](#mutating-maps)
 	* [Function values](#function-values)
 	* [Function closures](#function-closures)
+* Methods and interfaces
 	
 	
 ### Hello World ###
