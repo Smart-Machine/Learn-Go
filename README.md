@@ -29,8 +29,28 @@ This is a cheatsheet for future me about Go.
 	* [Function values](#function-values)
 	* [Function closures](#function-closures)
 * Methods and interfaces
+	* [Methods](#methods)
+	* [Methods continued](#methods-continued)
+	* [Pointer receivers](#pointer-receivers)
+	* [Methods and pointer indirection](#methods-and-pointer-indirection)
+	* [Choosing a value or pointer receiver](#choosing-a-value-or-pointer-receiver)
+	* [Interfaces are implemented implicitly](#interfaces-are-implemented-implicitly)
+	* [Interface values](#interface-values)
+	* [The empty interface](#the-empty-interface)
+	* [Type assertions](#type-assertions)
+	* [Type switches](#type-switches)
+	* [Stringers](#stringers)
+	* [Errors](#errors)
 * Generics
-* Concurrency
+	* [Type parameters](#type-parameters)
+	* [Generic types](#generic-types)
+* Concurrency 
+	* [Goroutines](#goroutines)
+	* [Channels](#channels)
+	* [Buffered Channels](#buffered-channels)
+	* [Range and Close](#range-and-close)
+	* [Select](#select)
+	* [Default Selection](#default-selection)
 	
 	
 ### Hello World ###
@@ -1264,20 +1284,888 @@ func main() {
 89
 ```
 
+### Methods ###
+
+Go does not have classes. However, you can define methods on types.
+A method is a function with a special __receiver__ argument.
+The receiver appears in its own argument list between the `func` keyword and the method name.
+In this example, the Abs method has a receiver of type `Vertex` named `v`.
+
+_methods.go_
+```go
+package main
+
+import (
+	"fmt"
+	"math"
+)
+
+type Vertex struct {
+	X, Y float64
+}
+
+func (v Vertex) Abs() float64 {
+	return math.Sqrt(v.X*v.X + v.Y*v.Y)
+}
+
+func main() {
+	v := Vertex{3, 4}
+	fmt.Println(v.Abs())
+}
+```
+_output:_
+```
+5
+```
+
+Remember: a method is just a function with a receiver argument.
+Here's Abs written as a regular function with no change in functionality.
+
+
+### Methods continued ###
+
+You can declare a method on non-struct types, too.
+In this example we see a numeric type `MyFloat` with an `Abs` method.
+You can only declare a method with a receiver whose type is defined in the same package as the method. You cannot declare a method with a receiver whose type is defined in another package (which includes the built-in types such as `int`).
+
+_methods-continued.go_
+```go
+package main
+
+import (
+	"fmt"
+	"math"
+)
+
+type MyFloat float64
+
+func (f MyFloat) Abs() float64 {
+	if f < 0 {
+		return float64(-f)
+	}
+	return float64(f)
+}
+
+func main() {
+	f := MyFloat(-math.Sqrt2)
+	fmt.Println(f.Abs())
+}
+```
+
+_output:_
+```
+1.4142135623730951
+```
 
 
 
+### Pointer receivers ###
+You can declare methods with pointer receivers.
+This means the receiver type has the literal syntax `*T` for some type `T`. (Also, `T` cannot itself be a pointer such as `*int`.)
+For example, the `Scale` method here is defined on `*Vertex`.
+Methods with pointer receivers can modify the value to which the receiver points (as `Scale` does here). Since methods often need to modify their receiver, pointer receivers are more common than value receivers.
+Try removing the `*` from the declaration of the `Scale` function on line 16 and observe how the program's behavior changes.
+With a value receiver, the `Scale` method operates on a copy of the original `Vertex` value. (This is the same behavior as for any other function argument.) The `Scale` method must have a pointer receiver to change the `Vertex` value declared in the `main` function.
+
+_methods-pointer.go_
+```go
+package main
+
+import (
+	"fmt"
+	"math"
+)
+
+type Vertex struct {
+	X, Y float64
+}
+
+func (v Vertex) Abs() float64 {
+	return math.Sqrt(v.X*v.X + v.Y*v.Y)
+}
+
+func (v *Vertex) Scale(f float64) {
+	v.X = v.X * f
+	v.Y = v.Y * f
+}
+
+func main() {
+	v := Vertex{3, 4}
+	v.Scale(10)
+	fmt.Println(v.Abs())
+}
+```
+
+_output:_
+```
+50
+```
+
+### Methods and pointer indirection ###
+Comparing the previous two programs, you might notice that functions with a pointer argument must take a pointer:
+```go
+var v Vertex
+ScaleFunc(v, 5)  // Compile error!
+ScaleFunc(&v, 5) // OK
+```
+while methods with pointer receivers take either a value or a pointer as the receiver when they are called:
+```go
+var v Vertex
+v.Scale(5)  // OK
+p := &v
+p.Scale(10) // OK
+```
+For the statement `v.Scale(5)`, even though `v` is a value and not a pointer, the method with the pointer receiver is called automatically. That is, as a convenience, Go interprets the statement `v.Scale(5)` as `(&v).Scale(5)` since the `Scale` method has a pointer receiver.
+
+_indirection.go_
+```go
+package main
+
+import "fmt"
+
+type Vertex struct {
+	X, Y float64
+}
+
+func (v *Vertex) Scale(f float64) {
+	v.X = v.X * f
+	v.Y = v.Y * f
+}
+
+func ScaleFunc(v *Vertex, f float64) {
+	v.X = v.X * f
+	v.Y = v.Y * f
+}
+
+func main() {
+	v := Vertex{3, 4}
+	v.Scale(2)
+	ScaleFunc(&v, 10)
+
+	p := &Vertex{4, 3}
+	p.Scale(3)
+	ScaleFunc(p, 8)
+
+	fmt.Println(v, p)
+}
+```
+
+_output:_
+```
+{60 80} &{96 72}
+```
+
+
+### Choosing a value or pointer receiver ###
+There are two reasons to use a pointer receiver.
+The first is so that the method can modify the value that its receiver points to.
+The second is to avoid copying the value on each method call. This can be more efficient if the receiver is a large struct, for example.
+In this example, both `Scale` and `Abs` are methods with receiver type `*Vertex`, even though the `Abs` method needn't modify its receiver.
+In general, all methods on a given type should have either value or pointer receivers, but not a mixture of both. (We'll see why over the next few pages.)
+
+_methods-with-pointer-receivers.go_
+```go
+package main
+
+import (
+	"fmt"
+	"math"
+)
+
+type Vertex struct {
+	X, Y float64
+}
+
+func (v *Vertex) Scale(f float64) {
+	v.X = v.X * f
+	v.Y = v.Y * f
+}
+
+func (v *Vertex) Abs() float64 {
+	return math.Sqrt(v.X*v.X + v.Y*v.Y)
+}
+
+func main() {
+	v := &Vertex{3, 4}
+	fmt.Printf("Before scaling: %+v, Abs: %v\n", v, v.Abs())
+	v.Scale(5)
+	fmt.Printf("After scaling: %+v, Abs: %v\n", v, v.Abs())
+}
+```
+
+_output:_
+```
+Before scaling: &{X:3 Y:4}, Abs: 5
+After scaling: &{X:15 Y:20}, Abs: 25
+```
 
 
 
+### Interfaces are implemented implicitly ###
+A type implements an interface by implementing its methods. There is no explicit declaration of intent, no "implements" keyword.
+Implicit interfaces decouple the definition of an interface from its implementation, which could then appear in any package without prearrangement.
+
+_interfaces-are-satisfied-implicitly.go_
+```go
+package main
+
+import "fmt"
+
+type I interface {
+	M()
+}
+
+type T struct {
+	S string
+}
+
+// This method means type T implements the interface I,
+// but we don't need to explicitly declare that it does so.
+func (t T) M() {
+	fmt.Println(t.S)
+}
+
+func main() {
+	var i I = T{"hello"}
+	i.M()
+}
+```
+
+_output:_
+```
+hello
+```
 
 
 
+### Interface values ###
+Under the hood, interface values can be thought of as a tuple of a value and a concrete type:
+```
+(value, type)
+```
+An interface value holds a value of a specific underlying concrete type.
+Calling a method on an interface value executes the method of the same name on its underlying type.
+
+_interface-value.go_
+```go
+package main
+
+import (
+	"fmt"
+	"math"
+)
+
+type I interface {
+	M()
+}
+
+type T struct {
+	S string
+}
+
+func (t *T) M() {
+	fmt.Println(t.S)
+}
+
+type F float64
+
+func (f F) M() {
+	fmt.Println(f)
+}
+
+func main() {
+	var i I
+
+	i = &T{"Hello"}
+	describe(i)
+	i.M()
+
+	i = F(math.Pi)
+	describe(i)
+	i.M()
+}
+
+func describe(i I) {
+	fmt.Printf("(%v, %T)\n", i, i)
+}
+```
+
+_output:_
+```
+(&{Hello}, *main.T)
+Hello
+(3.141592653589793, main.F)
+3.141592653589793
+```
+
+
+### The empty interface ###
+The interface type that specifies zero methods is known as the empty interface:
+```go
+interface{}
+```
+An empty interface may hold values of any type. (Every type implements at least zero methods.)
+Empty interfaces are used by code that handles values of unknown type. For example, `fmt.Print` takes any number of arguments of type `interface{}`.
+
+_empty-interface.go_
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var i interface{}
+	describe(i)
+
+	i = 42
+	describe(i)
+
+	i = "hello"
+	describe(i)
+}
+
+func describe(i interface{}) {
+	fmt.Printf("(%v, %T)\n", i, i)
+}
+```
+
+_output:_
+```
+(<nil>, <nil>)
+(42, int)
+(hello, string)
+```
 
 
 
+### Type assertions ###
+A _type assertion_ provides access to an interface value's underlying concrete value.
+```go
+t := i.(T)
+```
+This statement asserts that the interface value `i` holds the concrete type `T` and assigns the underlying `T` value to the variable `t`.
+If `i` does not hold a `T`, the statement will trigger a panic.
+To test whether an interface value holds a specific type, a type assertion can return two values: the underlying value and a boolean value that reports whether the assertion succeeded.
+```go
+t, ok := i.(T)
+```
+If `i` holds a `T`, then `t` will be the underlying value and ok will be true. If not, `ok` will be false and `t` will be the zero value of type `T`, and no panic occurs.
+
+_type-assertions.go_
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var i interface{} = "hello"
+
+	s := i.(string)
+	fmt.Println(s)
+
+	s, ok := i.(string)
+	fmt.Println(s, ok)
+
+	f, ok := i.(float64)
+	fmt.Println(f, ok)
+
+	f = i.(float64) // panic
+	fmt.Println(f)
+}
+```
+
+_output:_
+```
+hello
+hello true
+0 false
+panic: interface conversion: interface {} is string, not float64
+```
 
 
 
+### Type switches ###
+A _type switch_ is a construct that permits several type assertions in series.
+A type switch is like a regular switch statement, but the cases in a type switch specify types (not values), and those values are compared against the type of the value held by the given interface value.
+```go
+switch v := i.(type) {
+case T:
+    // here v has type T
+case S:
+    // here v has type S
+default:
+    // no match; here v has the same type as i
+}
+```
+The declaration in a type switch has the same syntax as a type assertion `i.(T)`, but the specific type `T` is replaced with the keyword `type`.
 
+This switch statement tests whether the interface value `i` holds a value of type `T` or `S`. In each of the `T` and `S` cases, the variable `v` will be of type `T` or `S` respectively and hold the value held by `i`. In the default case (where there is no match), the variable `v` is of the same interface type and value as `i`.
+
+_type-switches.go_
+```go
+package main
+
+import "fmt"
+
+func do(i interface{}) {
+	switch v := i.(type) {
+	case int:
+		fmt.Printf("Twice %v is %v\n", v, v*2)
+	case string:
+		fmt.Printf("%q is %v bytes long\n", v, len(v))
+	default:
+		fmt.Printf("I don't know about type %T!\n", v)
+	}
+}
+
+func main() {
+	do(21)
+	do("hello")
+	do(true)
+}
+```
+
+_output:_
+```
+Twice 21 is 42
+"hello" is 5 bytes long
+I don't know about type bool!
+```
+
+
+
+### Stringers ###
+One of the most ubiquitous interfaces is `Stringer` defined by the `fmt` package.
+```go
+type Stringer interface {
+    String() string
+}
+```
+A `Stringer` is a type that can describe itself as a string. The `fmt` package (and many others) look for this interface to print values.
+
+_stringer.go_
+```go
+package main
+
+import "fmt"
+
+type Person struct {
+	Name string
+	Age  int
+}
+
+func (p Person) String() string {
+	return fmt.Sprintf("%v (%v years)", p.Name, p.Age)
+}
+
+func main() {
+	a := Person{"Arthur Dent", 42}
+	z := Person{"Zaphod Beeblebrox", 9001}
+	fmt.Println(a, z)
+}
+```
+
+_output:_
+```
+Arthur Dent (42 years) Zaphod Beeblebrox (9001 years)
+```
+
+
+### Errors ### 
+Go programs express error state with `error` values.
+The `error` type is a built-in interface similar to `fmt.Stringer`:
+```go
+type error interface {
+    Error() string
+}
+```
+(As with `fmt.Stringer`, the fmt package looks for the `error` interface when printing values.)
+Functions often return an `error` value, and calling code should handle errors by testing whether the error equals `nil`.
+```go
+i, err := strconv.Atoi("42")
+if err != nil {
+    fmt.Printf("couldn't convert number: %v\n", err)
+    return
+}
+fmt.Println("Converted integer:", i)
+```
+A nil `error` denotes success; a non-nil `error` denotes failure.
+
+_errors.go_
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+type MyError struct {
+	When time.Time
+	What string
+}
+
+func (e *MyError) Error() string {
+	return fmt.Sprintf("at %v, %s",
+		e.When, e.What)
+}
+
+func run() error {
+	return &MyError{
+		time.Now(),
+		"it didn't work",
+	}
+}
+
+func main() {
+	if err := run(); err != nil {
+		fmt.Println(err)
+	}
+}
+```
+
+_output:_
+```
+at 2009-11-10 23:00:00 +0000 UTC m=+0.000000001, it didn't work
+```
+
+
+
+### Type parameters ### 
+Go functions can be written to work on multiple types using type parameters. The type parameters of a function appear between brackets, before the function's arguments.
+```go
+func Index[T comparable](s []T, x T) int
+```
+This declaration means that `s` is a slice of any type `T` that fulfills the built-in constraint `comparable`. `x` is also a value of the same type.
+
+`comparable` is a useful constraint that makes it possible to use the `==` and `!=` operators on values of the type. In this example, we use it to compare a value to all slice elements until a match is found. This `Index` function works for any type that supports comparison.
+
+_index.go_
+```go
+package main
+
+import "fmt"
+
+// Index returns the index of x in s, or -1 if not found.
+func Index[T comparable](s []T, x T) int {
+	for i, v := range s {
+		// v and x are type T, which has the comparable
+		// constraint, so we can use == here.
+		if v == x {
+			return i
+		}
+	}
+	return -1
+}
+
+func main() {
+	// Index works on a slice of ints
+	si := []int{10, 20, 15, -10}
+	fmt.Println(Index(si, 15))
+
+	// Index also works on a slice of strings
+	ss := []string{"foo", "bar", "baz"}
+	fmt.Println(Index(ss, "hello"))
+}
+```
+
+_output:_
+```
+2
+-1
+```
+
+
+
+### Generic types ###
+In addition to generic functions, Go also supports generic types. A type can be parameterized with a type parameter, which could be useful for implementing generic data structures.
+
+This example demonstrates a simple type declaration for a singly-linked list holding any type of value.
+
+As an exercise, add some functionality to this list implementation.
+
+_list.go_
+```go
+package main
+
+// List represents a singly-linked list that holds
+// values of any type.
+type List[T any] struct {
+	next *List[T]
+	val  T
+}
+
+func main() {
+}
+```
+
+
+
+### Goroutines ###
+A _goroutine_ is a lightweight thread managed by the Go runtime.
+```go
+go f(x, y, z)
+```
+starts a new goroutine running
+```
+f(x, y, z)
+```
+The evaluation of `f`, `x`, `y`, and `z` happens in the current goroutine and the execution of `f` happens in the new goroutine.
+
+Goroutines run in the same address space, so access to shared memory must be synchronized. The sync package provides useful primitives, although you won't need them much in Go as there are other primitives. 
+
+_goroutines.go_
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func say(s string) {
+	for i := 0; i < 5; i++ {
+		time.Sleep(100 * time.Millisecond)
+		fmt.Println(s)
+	}
+}
+
+func main() {
+	go say("world")
+	say("hello")
+}
+```
+
+_output:_
+```
+world 
+hello
+hello 
+world
+world
+hello
+...
+```
+
+
+### Channels ###
+Channels are a typed conduit through which you can send and receive values with the channel operator, `<-`.
+```go
+ch <- v    // Send v to channel ch.
+v := <-ch  // Receive from ch, and
+           // assign value to v.
+```
+Like maps and slices, channels must be created before use:
+```go
+ch := make(chan int)
+```
+By default, sends and receives block until the other side is ready. This allows goroutines to synchronize without explicit locks or condition variables. The example code sums the numbers in a slice, distributing the work between two goroutines. Once both goroutines have completed their computation, it calculates the final result.
+
+_channels.go_
+```go
+package main
+
+import "fmt"
+
+func sum(s []int, c chan int) {
+	sum := 0
+	for _, v := range s {
+		sum += v
+	}
+	c <- sum // send sum to c
+}
+
+func main() {
+	s := []int{7, 2, 8, -9, 4, 0}
+
+	c := make(chan int)
+	go sum(s[:len(s)/2], c)
+	go sum(s[len(s)/2:], c)
+	x, y := <-c, <-c // receive from c
+
+	fmt.Println(x, y, x+y)
+}
+```
+
+_output:_
+```
+-5 17 12
+```
+
+
+### Buffered Channels ###
+Channels can be buffered. Provide the buffer length as the second argument to make to initialize a buffered channel:
+```go
+ch := make(chan int, 100)
+```
+Sends to a buffered channel block only when the buffer is full. Receives block when the buffer is empty.
+
+
+
+### Range and Close ###
+A sender can `close` a channel to indicate that no more values will be sent. Receivers can test whether a channel has been closed by assigning a second parameter to the receive expression after:
+```go
+v, ok := <-ch
+```
+`ok` is `false` if there are no more values to receive and the channel is closed. 
+The loop for `i := range c` receives values from the channel repeatedly until it is closed.
+
+**Note:** Only the sender should close a channel, never the receiver. Sending on a closed channel will cause a panic.
+
+**Another note:** Channels aren't like files; you don't usually need to close them. Closing is only necessary when the receiver must be told there are no more values coming, such as to terminate a `range` loop.
+
+_range-and-close.go_
+```go
+package main
+
+import (
+	"fmt"
+)
+
+func fibonacci(n int, c chan int) {
+	x, y := 0, 1
+	for i := 0; i < n; i++ {
+		c <- x
+		x, y = y, x+y
+	}
+	close(c)
+}
+
+func main() {
+	c := make(chan int, 10)
+	go fibonacci(cap(c), c)
+	for i := range c {
+		fmt.Println(i)
+	}
+}
+```
+
+_output:_
+```
+0
+1
+1
+2
+3
+5
+8
+13
+21
+34
+```
+
+
+
+### Select ###
+The `select` statement lets a goroutine wait on multiple communication operations.
+
+A `select` blocks until one of its cases can run, then it executes that case. It chooses one at random if multiple are ready.
+
+_select.go_
+```go
+package main
+
+import "fmt"
+
+func fibonacci(c, quit chan int) {
+	x, y := 0, 1
+	for {
+		select {
+		case c <- x:
+			x, y = y, x+y
+		case <-quit:
+			fmt.Println("quit")
+			return
+		}
+	}
+}
+
+func main() {
+	c := make(chan int)
+	quit := make(chan int)
+	go func() {
+		for i := 0; i < 10; i++ {
+			fmt.Println(<-c)
+		}
+		quit <- 0
+	}()
+	fibonacci(c, quit)
+}
+```
+
+_output:_
+```
+0
+1
+1
+2
+3
+5
+8
+13
+21
+34
+quit
+```
+
+
+
+### Default Selection ###
+
+The `default` case in a `select` is run if no other case is ready.
+Use a `default` case to try a send or receive without blocking:
+```go
+select {
+case i := <-c:
+    // use i
+default:
+    // receiving from c would block
+}
+```
+
+_default-selection.go_
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	tick := time.Tick(100 * time.Millisecond)
+	boom := time.After(500 * time.Millisecond)
+	for {
+		select {
+		case <-tick:
+			fmt.Println("tick.")
+		case <-boom:
+			fmt.Println("BOOM!")
+			return
+		default:
+			fmt.Println("    .")
+			time.Sleep(50 * time.Millisecond)
+		}
+	}
+}
+```
+
+_output:_
+```
+    .
+    .
+tick.
+    .
+    .
+tick.
+    .
+    .
+tick.
+    .
+    .
+tick.
+    .
+    .
+BOOM!
+```
 
